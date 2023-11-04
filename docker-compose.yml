@@ -1,0 +1,58 @@
+version: "3.5"
+services:
+  php:
+      restart: always
+      build: './php/'
+      read_only: true
+      depends_on:
+          - mysql
+      volumes:
+          - ./public_html/:/var/www/html/:ro
+          # PAY ATTENTION: SOCK FOLDER NEEDS TO HAVE SETGID AND TO BE CHOWNED TO WWW-DATA GROUP. OTHER SETTINGS ARE NOT SECURE!
+          - ./sock/:/sock/:rw
+      environment:
+          - FLAG=flag{fake_flag}
+          - MYSQL_HOST=mysql
+          - MYSQL_DATABASE=webctf
+          - MYSQL_USER=webctf
+          - MYSQL_PASSWORD=placeholder
+      networks:
+          - default
+          - nginx_nolog
+      logging:
+          driver: "json-file"
+          options:
+              max-file: "1"
+              max-size: "10m"
+      #healthcheck:
+      #    test: "health_checker"
+      #    timeout: 15s
+      #    interval: 2m30s
+      #    retries: 2
+  mysql:
+      restart: always
+      build: './mysql/'
+      volumes:
+          - ./mysql/sql/:/docker-entrypoint-initdb.d/:ro
+      environment:
+          - MYSQL_ROOT_PASSWORD=placeholder
+          - MYSQL_DATABASE=webctf
+          - MYSQL_USER=webctf
+          - MYSQL_PASSWORD=placeholder
+      logging:
+          driver: "json-file"
+          options:
+              max-file: "1"
+              max-size: "10m"
+      healthcheck:
+          test: "mysqladmin status -u $$MYSQL_USER -p$$MYSQL_PASSWORD || exit 1"
+          timeout: 10s
+          interval: 1m30s
+          retries: 2
+networks:
+    default:
+        driver_opts:
+            com.docker.network.bridge.name: weakbank
+        internal: true
+    nginx_nolog:
+        external: true
